@@ -5,16 +5,18 @@
 //
 
 import Minerva
+import RxRelay
 import RxSwift
 import UIKit
 
 public final class CatalogPresenter: Presenter {
-  public lazy var sections: Observable<[ListSection]> = Observable.just(
-    [
+  public lazy var sections: BehaviorRelay<[ListSection]> = BehaviorRelay(
+    value: [
       createButtonCellModelSection(),
       createButtonImageCellModelSection(),
       createDatePickerCellModelSection(),
       createDetailedLabelCellModelSection(),
+      createHighlightableCellModelSection(),
       createIconTextCellModelSection(),
       createImageButtonCardCellModelSection(),
       createImageCellModelSection(),
@@ -112,6 +114,28 @@ public final class CatalogPresenter: Presenter {
     cellModels.append(model2)
 
     return createSection(for: cellModels, name: "DetailedLabelCellModel")
+  }
+
+  private func createHighlightableCellModelSection() -> ListSection {
+    let model1 = HighlightableLabelCellModel(
+      identifier: "HighlightableCellModel",
+      text: "HighlightableCellModel",
+      font: UIFont.preferredFont(forTextStyle: .subheadline))
+    model1.highlightEnabled = true
+    model1.highlightColor = UIColor.systemPurple.withAlphaComponent(0.75)
+
+    let font = UIFont.preferredFont(forTextStyle: .body)
+    let image = UIImage(systemName: "trash")!
+
+    let model2 = HighlightableIconTextCellModel(
+      imageSize: CGSize(width: 32, height: 32),
+      text: "IconTextCellModel",
+      font: font)
+    model2.iconImage.onNext(image)
+    model2.highlightEnabled = true
+    model2.highlightColor = model1.highlightColor
+
+    return createSection(for: [model1, model2], name: "Highlightable Cells")
   }
 
   private func createIconTextCellModelSection() -> ListSection {

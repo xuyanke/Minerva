@@ -7,19 +7,31 @@
 import Foundation
 import Minerva
 
-public struct FakeCellModel: ListTypedCellModel, ListSelectableCellModel, ListBindableCellModel {
+public struct FakeCellModel: ListTypedCellModel, ListSelectableCellModel, ListBindableCellModel, ListHighlightableCellModel, ListReorderableCellModel {
 
-  public typealias SelectableModelType = Self
+  public typealias SelectableModelType = FakeCellModel
   public var selectionAction: SelectionAction?
 
-  public typealias BindableModelType = Self
+  public typealias BindableModelType = FakeCellModel
   public var willBindAction: BindAction?
+
+  public typealias HighlightableModelType = FakeCellModel
+  public var highlightEnabled: Bool = true
+  public var highlightColor: UIColor?
+
+  public var highlightedAction: HighlightAction?
+  public var unhighlightedAction: HighlightAction?
+
+  public var reorderable: Bool = true
 
   public var identifier: String
   public var size: ListCellSize
 
   public func identical(to model: FakeCellModel) -> Bool {
     return size == model.size
+      && highlightEnabled == model.highlightEnabled
+      && highlightColor == model.highlightColor
+      && reorderable == model.reorderable
   }
 
   public func size(constrainedTo containerSize: CGSize, with templateProvider: () -> FakeCell) -> ListCellSize {

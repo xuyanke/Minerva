@@ -118,6 +118,46 @@ extension ListSelectableCellModel {
   }
 }
 
+/// This should not be used directly, conform to ListHighlightableCellModel instead.
+public protocol ListHighlightableCellModelWrapper {
+  /// If true, highlighting will be enabled and the highlight/unhighlight methods will be called.
+  var highlightEnabled: Bool { get }
+  /// The color that will be shown on the cell when highlighted.
+  var highlightColor: UIColor? { get set }
+  /// Called when the cell is highlighted.
+  func highlighted(at indexPath: IndexPath)
+  /// Called when the cell is unhighlighted.
+  func unhighlighted(at indexPath: IndexPath)
+}
+
+/// A protocol that models can conform to for cell highlighting.
+public protocol ListHighlightableCellModel: ListHighlightableCellModelWrapper {
+
+  associatedtype HighlightableModelType: ListCellModel
+  typealias HighlightAction = (_ cellModel: HighlightableModelType, _ indexPath: IndexPath) -> Void
+
+  /// The block to use when the cell is selected.
+  var highlightedAction: HighlightAction? { get }
+  var unhighlightedAction: HighlightAction? { get }
+}
+
+extension ListHighlightableCellModel {
+  public func highlighted(at indexPath: IndexPath) {
+    guard let model = self as? HighlightableModelType else {
+      assertionFailure("Invalid model type \(self) for \(HighlightableModelType.self)")
+      return
+    }
+    highlightedAction?(model, indexPath)
+  }
+  public func unhighlighted(at indexPath: IndexPath) {
+    guard let model = self as? HighlightableModelType else {
+      assertionFailure("Invalid model type \(self) for \(HighlightableModelType.self)")
+      return
+    }
+    unhighlightedAction?(model, indexPath)
+  }
+}
+
 /// This should not be used directly, conform to ListBindableCellModel instead.
 public protocol ListBindableCellModelWrapper {
   func willBind()

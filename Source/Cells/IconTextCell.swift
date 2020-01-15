@@ -8,8 +8,7 @@ import Foundation
 import RxSwift
 import UIKit
 
-open class IconTextCellModel: BaseListCellModel, ListSelectableCellModel, ListBindableCellModel {
-
+open class IconTextCellModel: BaseListCellModel {
   public let iconImage = BehaviorSubject<UIImage?>(value: nil)
 
   public var directionalLayoutMargins = NSDirectionalEdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16)
@@ -62,18 +61,9 @@ open class IconTextCellModel: BaseListCellModel, ListSelectableCellModel, ListBi
       && font == model.font
       && directionalLayoutMargins == model.directionalLayoutMargins
   }
-
-  // MARK: - ListSelectableCellModel
-  public typealias SelectableModelType = IconTextCellModel
-  public var selectionAction: SelectionAction?
-
-  // MARK: - ListBindableCellModel
-  public typealias BindableModelType = IconTextCellModel
-  public var willBindAction: BindAction?
 }
 
 public final class IconTextCell: BaseReactiveListCell<IconTextCellModel> {
-
   private let buttonView = UIView()
   private let imageView: UIImageView = {
     let imageView = UIImageView()
@@ -100,6 +90,7 @@ public final class IconTextCell: BaseReactiveListCell<IconTextCellModel> {
     buttonView.addSubview(label)
     setupConstraints()
     backgroundView = UIView()
+    selectedBackgroundView = UIView()
   }
 
   override public func prepareForReuse() {

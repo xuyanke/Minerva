@@ -6,6 +6,7 @@
 
 import Foundation
 import Minerva
+import RxRelay
 import RxSwift
 import UIKit
 
@@ -16,30 +17,27 @@ public final class UpdateFilterPresenter: Presenter {
 
   private static let dateCellModelIdentifier = "DateCellModel"
 
-  private let actionsSubject = PublishSubject<Action>()
-  public var actions: Observable<Action> { actionsSubject.asObservable() }
+  private let actionsRelay = PublishRelay<Action>()
+  public var actions: Observable<Action> { actionsRelay.asObservable() }
 
-  private let sectionsSubject = BehaviorSubject<[ListSection]>(value: [])
-  public var sections: Observable<[ListSection]> { sectionsSubject.asObservable() }
+  public var sections = BehaviorRelay<[ListSection]>(value: [])
 
   private let disposeBag = DisposeBag()
 
   private let type: FilterType
+  private var filterRelay: BehaviorRelay<WorkoutFilterProto>
   private var filter: WorkoutFilterProto {
-    didSet {
-      filterSubject.onNext(filter)
-    }
+    get { filterRelay.value }
+    set { filterRelay.accept(newValue) }
   }
-  private var filterSubject: BehaviorSubject<WorkoutFilterProto>
 
   // MARK: - Lifecycle
 
   public init(type: FilterType, filter: WorkoutFilter) {
     self.type = type
-    self.filter = filter.proto
-    self.filterSubject = BehaviorSubject(value: self.filter)
-    filterSubject.map({ [weak self] _ in self?.createSection() ?? [] })
-      .subscribe(sectionsSubject)
+    self.filterRelay = BehaviorRelay(value: filter.proto)
+    filterRelay.map({ [weak self] _ in self?.createSection() ?? [] })
+      .bind(to: sections)
       .disposed(by: disposeBag)
   }
 
@@ -53,7 +51,7 @@ public final class UpdateFilterPresenter: Presenter {
 
   private func loadCellModels() -> [ListCellModel] {
 
-    let cancelModel = LabelCellModel(identifier: "cancelModel", text: "Remove", font: .title1)
+    let cancelModel = SelectableLabelCellModel(identifier: "cancelModel", text: "Remove", font: .title1)
     cancelModel.directionalLayoutMargins.leading = 0
     cancelModel.directionalLayoutMargins.trailing = 0
     cancelModel.textAlignment = .center
@@ -70,17 +68,17 @@ public final class UpdateFilterPresenter: Presenter {
       case .startTime:
         strongSelf.filter.startTime = nil
       }
-      strongSelf.actionsSubject.onNext(.update(filter: strongSelf.filter))
+      strongSelf.actionsRelay.accept(.update(filter: strongSelf.filter))
     }
 
-    let doneModel = LabelCellModel(identifier: "doneModel", text: "Update", font: .title1)
+    let doneModel = SelectableLabelCellModel(identifier: "doneModel", text: "Update", font: .title1)
     doneModel.directionalLayoutMargins.leading = 0
     doneModel.directionalLayoutMargins.trailing = 0
     doneModel.textAlignment = .center
     doneModel.textColor = .selectable
     doneModel.selectionAction = { [weak self] _, _ -> Void in
       guard let strongSelf = self else { return }
-      strongSelf.actionsSubject.onNext(.update(filter: strongSelf.filter))
+      strongSelf.actionsRelay.accept(.update(filter: strongSelf.filter))
     }
 
     return [

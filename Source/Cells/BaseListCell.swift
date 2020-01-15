@@ -9,7 +9,6 @@ import RxSwift
 import UIKit
 
 open class BaseListCellModel: ListCellModel {
-
   private let cellIdentifier: String?
 
   public init(identifier: String? = nil) {
@@ -20,7 +19,9 @@ open class BaseListCellModel: ListCellModel {
   open var identifier: String { cellIdentifier ?? typeIdentifier }
   open var cellType: ListCollectionViewCell.Type { cellTypeFromModelName }
 
-  open func identical(to model: ListCellModel) -> Bool { true }
+  open func identical(to model: ListCellModel) -> Bool {
+    identifier == model.identifier
+  }
   open func size(
     constrainedTo containerSize: CGSize,
     with templateProvider: () -> ListCollectionViewCell
@@ -30,11 +31,26 @@ open class BaseListCellModel: ListCellModel {
 }
 
 open class BaseListCell<CellModelType: ListCellModel>: ListCollectionViewCell {
-
   open private(set) var model: CellModelType?
+  open private(set) var highlightView = UIView()
+
+  override open var isHighlighted: Bool {
+    didSet {
+      guard let highlightModel = model as? ListHighlightableCellModelWrapper,
+        highlightModel.highlightEnabled else {
+          self.highlightView.isHidden = true
+          return
+      }
+
+      self.highlightView.isHidden = !self.isHighlighted
+    }
+  }
 
   override public init(frame: CGRect) {
     super.init(frame: frame)
+    contentView.addSubview(highlightView)
+    highlightView.isHidden = true
+    highlightView.anchor(to: contentView)
   }
 
   @available(*, unavailable)
@@ -72,6 +88,7 @@ open class BaseListCell<CellModelType: ListCellModel>: ListCollectionViewCell {
       assertionFailure("Invalid view model \(viewModel)")
       return
     }
+
     bind(cellModel: wrapper.model, sizing: false)
   }
 
@@ -80,6 +97,12 @@ open class BaseListCell<CellModelType: ListCellModel>: ListCollectionViewCell {
       assertionFailure("Unknown cell model type \(CellModelType.self) for \(cellModel)")
       self.model = nil
       return
+    }
+    if !sizing {
+      if let highlightableViewModel = cellModel as? ListHighlightableCellModelWrapper,
+        highlightableViewModel.highlightEnabled {
+        highlightView.backgroundColor = highlightableViewModel.highlightColor
+      }
     }
     bind(model: model, sizing: sizing)
   }
@@ -91,5 +114,9 @@ open class BaseReactiveListCell<CellModelType: ListCellModel>: BaseListCell<Cell
   override open func prepareForReuse() {
     super.prepareForReuse()
     disposeBag = DisposeBag()
+  }
+  override open func bind(model: CellModelType, sizing: Bool) {
+    disposeBag = DisposeBag()
+    super.bind(model: model, sizing: sizing)
   }
 }

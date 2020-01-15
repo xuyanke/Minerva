@@ -225,12 +225,30 @@ extension ListModelSectionController: ListBindingSectionControllerSelectionDeleg
     _ sectionController: ListBindingSectionController<ListDiffable>,
     didHighlightItemAt index: Int,
     viewModel: Any
-  ) { }
+  ) {
+    guard let wrapper = viewModel as? ListCellModelWrapper else {
+      assertionFailure("Unsupported view model type \(viewModel)")
+      return
+    }
+    let indexPath = IndexPath(item: index, section: self.section)
+    if let model = wrapper.model as? ListHighlightableCellModelWrapper {
+      model.highlighted(at: indexPath)
+    }
+  }
   internal func sectionController(
     _ sectionController: ListBindingSectionController<ListDiffable>,
     didUnhighlightItemAt index: Int,
     viewModel: Any
-  ) { }
+  ) {
+    guard let wrapper = viewModel as? ListCellModelWrapper else {
+      assertionFailure("Unsupported view model type \(viewModel)")
+      return
+    }
+    let indexPath = IndexPath(item: index, section: self.section)
+    if let model = wrapper.model as? ListHighlightableCellModelWrapper {
+      model.unhighlighted(at: indexPath)
+    }
+  }
 }
 
 // MARK: - ListDisplayDelegate

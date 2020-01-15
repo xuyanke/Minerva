@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name = "Minerva"
-  s.version = "2.13.2"
+  s.version = "2.15.0"
   s.license = { :type => 'MIT', :file => 'LICENSE' }
 
   s.summary = "A Swift MVVM + Coordinator Framework"
@@ -37,6 +37,7 @@ Pod::Spec.new do |s|
 
     ss.dependency 'IGListKit'
     ss.dependency 'RxSwift'
+    ss.dependency 'RxRelay'
 
     ss.ios.deployment_target = '11.0'
     ss.ios.frameworks = 'Foundation', 'UIKit'
