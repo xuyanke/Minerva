@@ -1,19 +1,15 @@
 osx_image: xcode11.2
 language: swift
-cache:
-  bundler: true
-before_install:
-  - brew update
 
 jobs:
   include:
-    - stage: Lint Pod, Test, Generate Coverage
+    - stage: Test, Generate Coverage
       install:
+        - brew update
         - brew outdated cocoapods || brew upgrade cocoapods
         - brew install xcodegen
         - gem install slather
       script:
-        - pod lib lint
         - set -o pipefail && xcodebuild -workspace Minerva.xcworkspace -scheme Minerva -destination 'platform=iOS Simulator,name=iPhone 11 Pro Max,OS=13.2.2' build test | xcpretty
         - slather
         - bash <(curl -s https://codecov.io/bash)
