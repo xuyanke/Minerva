@@ -63,6 +63,7 @@ open class ButtonImageCellModel: BaseListCellModel {
       && imageSize == model.imageSize
       && backgroundColor == model.backgroundColor
       && directionalLayoutMargins == model.directionalLayoutMargins
+      && minimumContainerHeight == model.minimumContainerHeight
   }
 }
 
